@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\CategoryResource\RelationManagers\CategoriesRelationManager;
 use Closure;
 use Filament\Forms;
 use Filament\Tables;
@@ -11,13 +10,14 @@ use Illuminate\Support\Str;
 use Filament\Resources\Form;
 use Filament\Resources\Table;
 use Filament\Resources\Resource;
+use Filament\Pages\Actions\Action;
 use Livewire\TemporaryUploadedFile;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\CheckboxList;
 use App\Filament\Resources\ProductResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\ProductResource\RelationManagers;
+use App\Filament\Resources\CategoryResource\RelationManagers\CategoriesRelationManager;
 
 class ProductResource extends Resource
 {
@@ -108,7 +108,15 @@ class ProductResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-            ])
+
+
+                ViewAction::make('View Qr Code')
+                ->icon('heroicon-o-qrcode')
+                ->url(fn (Product $record) => static::getUrl('qr-code', $record)),
+           
+           
+           
+                ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
@@ -127,6 +135,7 @@ class ProductResource extends Resource
             'index' => Pages\ListProducts::route('/'),
             'create' => Pages\CreateProduct::route('/create'),
             'edit' => Pages\EditProduct::route('/{record}/edit'),
+            'qr-code' =>Pages\ViewQrcode::route('/{record}/qr-code'),
         ];
     }    
 }
