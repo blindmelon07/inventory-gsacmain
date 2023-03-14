@@ -44,7 +44,7 @@ class ProductResource extends Resource
                 ->disabled()
                 ->required(),
             Forms\Components\TextInput::make('details')
-                ->rules(['min:10', 'max:20'])
+                ->rules(['min:5', 'max:200'])
                 ->required(),
             Forms\Components\TextInput::make('product_code')
                 ->dehydrateStateUsing(fn ($state) => Str::upper($state))
@@ -98,9 +98,10 @@ class ProductResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\ImageColumn::make('main_image'),
-                Tables\Columns\TextColumn::make('name'),
-                Tables\Columns\TextColumn::make('product_code'),
+                Tables\Columns\TextColumn::make('name')->searchable(),
+                Tables\Columns\TextColumn::make('product_code')->searchable(),
                 Tables\Columns\TextColumn::make('price'),
+                Tables\Columns\TextColumn::make('quantity'),
             ])
             ->filters([
                 //

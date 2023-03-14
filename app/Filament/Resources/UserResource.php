@@ -2,22 +2,27 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\UserResource\Pages;
-use App\Filament\Resources\UserResource\RelationManagers;
-use App\Models\User;
 use Filament\Forms;
-use Filament\Resources\Form;
-use Filament\Resources\Resource;
-use Filament\Resources\Table;
+use App\Models\User;
 use Filament\Tables;
+use Illuminate\Support\Str;
+use Filament\Resources\Form;
+use Filament\Resources\Table;
+use Filament\Resources\Resource;
+use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Hash;
+use Filament\Forms\Components\Select;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\UserResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\UserResource\RelationManagers;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-collection';
+    protected static ?string $navigationGroup = 'User Management';
 
     public static function form(Form $form): Form
     {
@@ -30,11 +35,15 @@ class UserResource extends Resource
                     ->email()
                     ->required()
                     ->maxLength(255),
-                Forms\Components\DateTimePicker::make('email_verified_at'),
-                Forms\Components\TextInput::make('password')
+                    Forms\Components\TextInput::make('password')
                     ->password()
-                    ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->dehydrated(fn ($state) => filled($state))
+                    ->dehydrateStateUsing(fn ($state) => Hash::make($state)),
+                    Select::make('role_id')
+                    ->label('Role')
+                    ->options(Role::all()->pluck('name', 'id'))
+                    ->searchable()
             ]);
     }
 
@@ -44,10 +53,15 @@ class UserResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name'),
                 Tables\Columns\TextColumn::make('email'),
-                Tables\Columns\TextColumn::make('email_verified_at')
-                    ->dateTime(),
+                
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime(),
+                    Tables\Columns\BadgeColumn::make('role_id')->label('Role')->getStateUsing(
+                        fn (User $record): string =>
+                        Role::find($record->role_id)->name ?? 'none'
+                   )->colors(['primary'])
+                     ->formatStateUsing(fn ($state): string => Str::headline($state))
+                     ->searchable(),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime(),
             ])
